@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subject-Date Timeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: #00DBDE;
+            background-image: linear-gradient(90deg, #00DBDE 0%, #A700FF 70%, #7200A8 100%);
+            background-attachment: fixed;
+            background-size: 200% 200%;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 30px;
+            overflow-x: hidden;
+            animation: gradientShift 20s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 25px;
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+            transition: all 0.5s ease;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 2.5rem 0;
+            font-size: 2.8em;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(167, 0, 255, 0.5), 0 0 25px rgba(0, 219, 222, 0.5);
+            letter-spacing: -0.02em;
+            padding: 0.5rem 2rem;
+            background: linear-gradient(135deg, rgba(0, 219, 222, 0.3), rgba(167, 0, 255, 0.3));
+            border-radius: 15px;
+            display: inline-block;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 15px rgba(167, 0, 255, 0.5), 0 0 25px rgba(0, 219, 222, 0.5); }
+            100% { text-shadow: 0 0 25px rgba(167, 0, 255, 0.7), 0 0 35px rgba(0, 219, 222, 0.7); }
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 3rem;
+        }
+
+        .form-group {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(18px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.5s ease;
+        }
+
+        .form-group:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        h2 {
+            color: #fff;
+            margin-bottom: 1.2rem;
+            font-size: 1.4em;
+            text-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 14px 20px;
+            margin-top: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            color: #fff;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.4s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input:focus, select:focus {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: #A700FF;
+            box-shadow: 0 0 0 4px rgba(167, 0, 255, 0.25);
+            outline: none;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00DBDE 0%, #A700FF 100%);
+            border: none;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-top: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(167, 0, 255, 0.35);
+            transition: all 0.4s ease;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(167, 0, 255, 0.45);
+            background: linear-gradient(135deg, #00F7FA 0%, #CC00FF 100%);
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            padding: 20px 0;
+        }
+
+        .timeline-row {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            padding: 15px 0;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .subject-box {
+            min-width: 150px;
+            padding: 1.3rem 2rem;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(18px);
+            transition: all 0.5s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            position: relative;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .subject-box:hover {
+            transform: translateY(-5px) scale(1.02);
+            background: rgba(167, 0, 255, 0.25);
+            border-color: #A700FF;
+            box-shadow: 0 12px 40px rgba(167, 0, 255, 0.3);
+        }
+
+        .connector-line {
+            width: 90px;
+            height: 4px;
+            background: linear-gradient(90deg,
+                rgba(0, 219, 222, 0.5) 0%,
+                rgba(167, 0, 255, 0.9) 50%,
+                rgba(0, 219, 222, 0.5) 100%);
+            border-radius: 4px;
+            transition: all 0.4s ease;
+        }
+
+        .date-circle {
+            min-width: 110px;
+            padding: 1.1rem 1.6rem;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(18px);
+            transition: all 0.5s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .date-circle:hover {
+            transform: translateY(-5px) scale(1.02);
+            background: rgba(0, 219, 222, 0.25);
+            border-color: #00DBDE;
+            box-shadow: 0 12px 40px rgba(0, 219, 222, 0.3);
+        }
+
+        .delete-subject, .delete-date {
+            background: rgba(255, 82, 82, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: absolute;
+            top: -14px;
+            right: -14px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            opacity: 0;
+            box-shadow: 0 5px 15px rgba(255, 82, 82, 0.3);
+        }
+
+        .subject-box:hover .delete-subject,
+        .date-circle:hover .delete-date {
+            opacity: 1;
+        }
+
+        .delete-subject:hover, .delete-date:hover {
+            transform: scale(1.15);
+            background: rgba(255, 82, 82, 1);
+            box-shadow: 0 8px 20px rgba(255, 82, 82, 0.5);
+        }
+
+        .error-message, .info-message {
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 1rem;
+            font-size: 0.95em;
+            display: none;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .error-message {
+            background: rgba(255, 82, 82, 0.35);
+            border: 1px solid rgba(255, 82, 82, 0.6);
+            color: #ffdddd;
+        }
+
+        .info-message {
+            background: rgba(0, 219, 222, 0.35);
+            border: 1px solid rgba(0, 219, 222, 0.6);
+            color: #ddffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Subject-Date Timeline</h1>
+
+        <!-- Controls Section -->
+        <div class="controls">
+            <div class="form-group">
+                <h2>Add Subject</h2>
+                <input type="text" id="subjectName" placeholder="Subject name">
+                <div class="error-message" id="subjectError"></div>
+                <button onclick="addSubject()">Add Subject</button>
+            </div>
+            
+            <div class="form-group">
+                <h2>Schedule Date</h2>
+                <select id="subjectSelect"></select>
+                <input type="date" id="scheduleDate">
+                <div class="error-message" id="dateError"></div>
+                <div class="info-message" id="cutInfo"></div>
+                <button onclick="scheduleDate()">Add Date</button>
+            </div>
+        </div>
+
+        <!-- Timeline Section -->
+        <div class="timeline" id="timeline"></div>
+    </div>
+
+    <script>
+        // Load data from localStorage with validation
+        let subjects = [];
+        let schedule = [];
+
+        // Initialize data with validation
+        function initializeData() {
+            try {
+                const storedSubjects = JSON.parse(localStorage.getItem('subjects'));
+                const storedSchedule = JSON.parse(localStorage.getItem('schedule'));
+
+                if (Array.isArray(storedSubjects)) {
+                    subjects = storedSubjects.filter(subject => 
+                        typeof subject === 'string' && subject.trim() !== ''
+                    );
+                }
+
+                if (Array.isArray(storedSchedule)) {
+                    schedule = storedSchedule.filter(item => 
+                        item && 
+                        typeof item.subject === 'string' && 
+                        item.subject.trim() !== '' && 
+                        typeof item.date === 'string' && 
+                        typeof item.id === 'number'
+                    );
+                }
+
+                localStorage.setItem('subjects', JSON.stringify(subjects));
+                localStorage.setItem('schedule', JSON.stringify(schedule));
+            } catch (error) {
+                console.error("Error loading data from localStorage:", error);
+                subjects = [];
+                schedule = [];
+                localStorage.setItem('subjects', JSON.stringify(subjects));
+                localStorage.setItem('schedule', JSON.stringify(schedule));
+            }
+        }
+
+        function updateSubjects() {
+            const select = document.getElementById('subjectSelect');
+            select.innerHTML = subjects.length > 0 
+                ? subjects.map(subject => `
+                    <option value="${subject}">${subject}</option>
+                `).join('')
+                : '<option value="">No subjects available</option>';
+        }
+
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 3000);
+        }
+
+        function showInfo(elementId, message) {
+            const infoElement = document.getElementById(elementId);
+            infoElement.textContent = message;
+            infoElement.style.display = 'block';
+            setTimeout(() => {
+                infoElement.style.display = 'none';
+            }, 3000);
+        }
+
+        function addSubject() {
+            const nameInput = document.getElementById('subjectName');
+            const name = nameInput.value.trim();
+
+            if (!name) {
+                showError('subjectError', 'Please enter a subject name.');
+                return;
+            }
+
+            if (subjects.includes(name)) {
+                showError('subjectError', 'Subject already exists.');
+                return;
+            }
+
+            subjects.push(name);
+            localStorage.setItem('subjects', JSON.stringify(subjects));
+            nameInput.value = '';
+            updateSubjects();
+            updateTimeline();
+        }
+
+        function scheduleDate() {
+            const subject = document.getElementById('subjectSelect').value;
+            const date = document.getElementById('scheduleDate').value;
+
+            if (!subject || subject === '') {
+                showError('dateError', 'Please add a subject first.');
+                return;
+            }
+
+            if (!date) {
+                showError('dateError', 'Please select a date.');
+                return;
+            }
+
+            schedule.push({ 
+                subject, 
+                date, 
+                id: Date.now()
+            });
+            localStorage.setItem('schedule', JSON.stringify(schedule));
+            document.getElementById('scheduleDate').value = '';
+            updateTimeline();
+        }
+
+        function deleteSubject(subject) {
+            if (typeof subject !== 'string' || subject.trim() === '') {
+                console.error("Invalid subject to delete:", subject);
+                return;
+            }
+
+            subjects = subjects.filter(s => s !== subject);
+            schedule = schedule.filter(item => item.subject !== subject);
+            localStorage.setItem('subjects', JSON.stringify(subjects));
+            localStorage.setItem('schedule', JSON.stringify(schedule));
+            showInfo('cutInfo', `Deleted subject: ${subject}`);
+            updateSubjects();
+            updateTimeline();
+        }
+
+        function deleteDate(id) {
+            if (typeof id !== 'number') {
+                console.error("Invalid date ID to delete:", id);
+                return;
+            }
+
+            const dateItem = schedule.find(item => item.id === id);
+            if (!dateItem) {
+                console.error("Date not found for ID:", id);
+                return;
+            }
+
+            schedule = schedule.filter(item => item.id !== id);
+            localStorage.setItem('schedule', JSON.stringify(schedule));
+            showInfo('cutInfo', `Deleted date: ${new Date(dateItem.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} for ${dateItem.subject}`);
+            updateTimeline();
+        }
+
+        function updateTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = subjects.map(subject => {
+                const subjectDates = schedule
+                    .filter(item => item.subject === subject)
+                    .map(item => ({
+                        date: new Date(item.date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric'
+                        }),
+                        id: item.id
+                    }));
+                
+                return `
+                    <div class="timeline-row">
+                        <div class="subject-box">
+                            ${subject}
+                            <button class="delete-subject" onclick="deleteSubject('${subject}')">×</button>
+                        </div>
+                        ${subjectDates.map(date => `
+                            <div class="connector-line"></div>
+                            <div class="date-circle">
+                                ${date.date}
+                                <button class="delete-date" onclick="deleteDate(${date.id})">×</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        initializeData();
+        updateSubjects();
+        updateTimeline();
+    </script>
+</body>
+</html>
